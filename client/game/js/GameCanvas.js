@@ -38,15 +38,15 @@ define([
 
             // load sprites
             this.sprCharacters = {};
-            _.each(['john','joe','betty','mary'], _.bind(function(c) {
-                this.sprCharacters[c] = this._loadSprite("res/char-"+c+".png");
+            _.each(['Chicken1','Chicken2'], _.bind(function(c) {
+                this.sprCharacters[c] = this._loadSprite("sprites/"+c+".png");
             }, this));
 
-            this.sprFlames = this._loadSprite('res/flames.png');
+            this.sprFlames = this._loadSprite('sprites/flames.png');
 
-            this.sprBomb = this._loadSprite('res/bombs.png');
+            this.sprBomb = this._loadSprite('sprites/egg_bombs.png');
 
-            this.sprTiles = this._loadSprite('res/tiles.png');
+            this.sprTiles = this._loadSprite('sprites/tiles.png');
         },
 
         _canvas: function(w, h) {
