@@ -15,7 +15,7 @@ if (!process.env.SHORTFUSE_LIGHT)
 
 
 global.counters = {};
-var monitor = require("./monitor.js").start({io: socketio, redis: redis});
+//var monitor = require("./monitor.js").start({io: socketio, redis: redis});
 
 var Server = require("./game/server");
 
@@ -28,7 +28,7 @@ app.use(express.bodyParser());
 app.use(express.static(__dirname + "/../web/game/"));
 
 // monitor
-app.use("/monitor/", express.static(__dirname + "/../web/monitor/"));
+//app.use("/monitor/", express.static(__dirname + "/../web/monitor/"));
 
 server.listen(8080);
 

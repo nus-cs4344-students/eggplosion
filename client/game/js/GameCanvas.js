@@ -1,4 +1,3 @@
-
 define([
     "jquery", "underscore", "backbone"
 ], function($, _, Backbone) {
@@ -38,11 +37,11 @@ define([
 
             // load sprites
             this.sprCharacters = {};
-            _.each(['Chicken1','Chicken2'], _.bind(function(c) {
-                this.sprCharacters[c] = this._loadSprite("sprites/"+c+".png");
+            _.each(['john','joe'], _.bind(function(c) {
+                this.sprCharacters[c] = this._loadSprite("sprites/char-"+c+".png");
             }, this));
 
-            this.sprFlames = this._loadSprite('sprites/flames.png');
+            this.sprFlames = this._loadSprite('sprites/Explosion_flames.png');
 
             this.sprBomb = this._loadSprite('sprites/egg_bombs.png');
 

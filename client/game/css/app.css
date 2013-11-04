@@ -238,11 +238,11 @@ a:hover {
 }
 
 #lobby .character-select .john {
-  background-image: url("../res/char-john.png");
+  background-image: url("../sprites/char-john.png");
 }
 
 #lobby .character-select .joe {
-  background-image: url("../res/char-joe.png");
+  background-image: url("../sprites/char-joe.png");
 }
 
 #lobby .character-select .frame0 .selected div {

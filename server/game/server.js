@@ -21,13 +21,16 @@ require("./player.js");
 
 var Server = Backbone.Model.extend({
 
+	
     initialize: function(opt) {
         var io = opt.io;
         redis = opt.redis;
-
+	this.games={};
+	this.endpoints={};
+	this.gameIDCounter=0;	
         global.counters.players = 0;
         global.counters.mapfill = 0;
-
+	this.serverIO=opt.io;
         if (redis) {
             redis.incr("counters.restarts");
             redis.set("stats.last-start-time", (new Date()).getTime());
@@ -35,31 +38,110 @@ var Server = Backbone.Model.extend({
 
         io.set('log level', 1);
 
-        this.game = new Game({ redis: redis });
+        var game = new Game({ redis: redis });
+	game.gameID=this.gameIDCounter;
+       
+	
+	this.games[this.gameIDCounter]=game;
+	
 
-        this.game.bombs.on('remove', this.onBombRemoved, this);
+        var endpoint = io.of('/game'+this.gameIDCounter);
+        endpoint.on('connection', _.bind(this.connection, this));
+        game.endpoint = endpoint;
+	 this.endpoints[this.gameIDCounter]=endpoint;
 
-        this.game.on('score-changes', _.debounce(this.notifyScoreUpdates, 50), this);
-
-
-        this.endpoint = io.of('/game1');
-        this.endpoint.on('connection', _.bind(this.connection, this));
-
-        this.game.endpoint = this.endpoint;
-
+	
+	 game.bombs.on('remove', _.bind(function(b) {
+		 
+		 this.endpoints[game.gameID].emit('bomb-boomed', {
+            x: b.get('x'),
+            y: b.get('y'),
+            strength: b.get('strength')
+        });
+		 
+	 },this));
+	
+        game.on('score-changes', _.debounce(this.notifyScoreUpdates, 50), this);
+	 
         this.lobby = io.of('/lobby');
         this.lobby.on('connection', _.bind(this.lobbyConnection, this));
+	 this.gameIDCounter++;
     },
 
     lobbyConnection: function(socket) {
-
+	
+	    var allFull=1;
+	    try{
+		    _.each(this.games,function(game)
+		    {
+			    if (game.totalPlayer<2)
+			   {
+				   throw new Error("break");
+			   }
+			    
+		    });
+	    }catch(e)
+	    {
+		    if (e.message=="break")
+		    {
+			allFull=0;    
+		    }
+	    }
+	
+	
+	console.log("allFull: "+allFull);
+	if (allFull==1)
+	{	
+		var game = new Game({ redis: redis });
+		game.gameID=this.gameIDCounter;
+		//game.bombs.on('remove', this.onBombRemoved, this);
+	
+		
+		this.games[this.gameIDCounter]=game;
+		 var endpoint = this.serverIO.of('/game'+this.gameIDCounter);
+		endpoint.on('connection', _.bind(this.connection, this));
+		game.endpoint = endpoint;
+		this.endpoints[this.gameIDCounter]=endpoint;
+		
+		 game.bombs.on('remove', _.bind(function(b) {
+		
+		 this.endpoints[game.gameID].emit('bomb-boomed', 
+			 {
+				x: b.get('x'),
+				y: b.get('y'),
+				strength: b.get('strength')
+			});
+		 
+	 },this));
+	 
+		game.on('score-changes', _.debounce(this.notifyScoreUpdates, 50), this);
+		this.gameIDCounter++;
+		
+		
+	}
+	
+	    
         socket.on('list-games', _.bind(function(d) {
-            socket.emit("list-games", {
-                "game1": {
-                    type: "free",
-                    count: global.counters.players
-                }
-            });
+		var count=0;
+		var allGames={};
+	  _.each(this.games,function(game) {
+		
+		if (game.totalPlayer<2)
+		  {
+			  var game1= {
+				   type: "free",
+				  count: game.totalPlayer,
+				   gameID:game.gameID
+				};
+			allGames[count]=game1;
+			count++;
+		 }	  
+		  
+	});
+		
+	 socket.emit("list-games",allGames);
+		
+         
         }, this));
 
     },
@@ -68,7 +150,7 @@ var Server = Backbone.Model.extend({
         global.counters.players++;
 
         // generate id
-        var playerId = this.game.generatePlayerId();
+        var playerId = this.games[0].generatePlayerId();
 
         // send game info
         socket.emit('game-info', {
@@ -91,25 +173,26 @@ var Server = Backbone.Model.extend({
                 character: d.character,
                 fbuid: d.fbuid
             });
-            this.game.playersById[playerId] = me;
-
+            this.games[d.gameID].playersById[playerId] = me;
+	   this.games[d.gameID].totalPlayer++;
             // setup a player controller
             var ctrl = new PlayerController({
                 id: playerId,
                 player: me,
-                game: this.game, // TODO joined game
+                game: this.games[d.gameID], // TODO joined game
                 socket: socket,
-                endpoint: this.endpoint
+                endpoint: this.endpoints[d.gameID]
             });
-            this.game.ctrlsById[playerId] = ctrl;
+            this.games[d.gameID].ctrlsById[playerId] = ctrl;
 
             ctrl.on('disconnect', _.bind(function() {
-                delete this.game.playersById[playerId];
-                delete this.game.ctrlsById[playerId];
+                delete this.games[d.gameID].playersById[playerId];
+                delete this.games[d.gameID].ctrlsById[playerId];
+		this.games[d.gameID].totalPlayer--;
 
 
                 // FIXME D.R.Y.
-                _.each(this.game.ctrlsById, function(ctrl, id) {
+                _.each(this.games[d.gameID].ctrlsById, function(ctrl, id) {
                     if (id == playerId) return;
                     ctrl.notifyFriendBattles();
                 });
@@ -117,7 +200,7 @@ var Server = Backbone.Model.extend({
                 global.counters.players--;
             }, this));
 
-            console.log("+ " + name + " joined the game " + d.fbuid);
+            console.log("+ " + name + " joined the game " );
 
             // notify everyone about my join
             socket.broadcast.emit('player-joined', me.getInitialInfo());
@@ -125,7 +208,7 @@ var Server = Backbone.Model.extend({
             // update me about the current game state
             ctrl.notifyGameState();
 
-            _.each(this.game.ctrlsById, function(ctrl, id) {
+            _.each(this.games[d.gameID].ctrlsById, function(ctrl, id) {
                 if (id == playerId) return;
                 ctrl.notifyFriendBattles();
             });
@@ -133,23 +216,25 @@ var Server = Backbone.Model.extend({
 
     },
 
-    onBombRemoved: function(b) {
+    /*onBombRemoved: function(b) {
 //            console.log('exploding bomb at ' + b.get('x') + "," + b.get('y'));
-
+	//console.log(gameID);
         this.endpoint.emit('bomb-boomed', {
             x: b.get('x'),
             y: b.get('y'),
             strength: b.get('strength')
         });
-    },
+    },*/
 
-    notifyScoreUpdates: function() {
+    notifyScoreUpdates: function(gameID) {
         var scoring = {};
-        _.each(this.game.playersById, function(p,id) {
+		//console.log(typeof(game));
+	
+        _.each(this.games[gameID].playersById, function(p,id) {
             scoring[id] = p.get('score');
         });
 
-        this.endpoint.emit('score-updates', scoring);
+        this.endpoints[gameID].emit('score-updates', scoring);
     }
 
 

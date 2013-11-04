@@ -16,7 +16,7 @@ define([
             this.$el.html(_.template(tpl));
 
             this.initUsername();
-
+	
             //this.lobby = io.connect(window.location.protocol + '//' + window.location.hostname + ':3000/lobby');
             this.lobby = io.connect('http://localhost:8080/lobby');
 
@@ -48,12 +48,13 @@ define([
             $(e.currentTarget).addClass("selected");
         },
 
-        gotFacebookUser: function() {
+       /* gotFacebookUser: function() {
             $("#facebook-login").fadeOut(500);
 
             $("#userpic").append($("<img/>").attr("src", window.location.protocol + "//graph.facebook.com/" + fb.uid + "/picture?type=square").fadeIn());
             $('#userid').val(fb.uname);
         },
+	*/
 
         lobbyConnect: function(s) {
             console.log("lobby on!");
@@ -73,8 +74,12 @@ define([
             var gamesList = $('#games-list').empty();
 
             _.each(games, function(game, key) {
-                var i = $(gameTemplate(game));
-                i.data("game", key);
+		  
+                    var i = $(gameTemplate(game));
+		    var x="game"+game.gameID;
+		    i.data("game", x);
+		    i.data("gameID", game.gameID);
+		    
                 gamesList.append(i);
             });
         },
@@ -101,6 +106,8 @@ define([
         startGame: function(e) {
             var name = $('#userid').val();
             var game = $(e.currentTarget).data("game");
+	    var gameID=$(e.currentTarget).data("gameID");
+	  
             var character = $(".character-select li.selected div").attr("class");
 
             localStorage.setItem("userName", name);
@@ -120,14 +127,16 @@ define([
                 playerName: name,
                 // fbuid: fb.uid,
                 character: character,
-                game: game
+                game: game,
+		  gameID:gameID  
             });
 
             console.log({
                             playerName: name,
-                            fbuid: FBuid,
+                            //fbuid: FBuid,
                             character: character,
-                            game: game
+                            game: game,
+		             gameID:gameID
                         });
         }
 
@@ -135,9 +144,10 @@ define([
 
     var gameTemplate = _.template('<div class="game-mode <%= type %>">'+
                                     '<div class="counter"><%= count %></div>' +
+				     '<div class="gameID"><%= gameID %></div>' +
                                     '<div class="play">play</div>' +
                                 '</div>)');
 
-    var FBuid = -1;
+  //  var FBuid = -1;
 
 });

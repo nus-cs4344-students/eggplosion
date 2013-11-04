@@ -24,7 +24,8 @@
             this.redis = opt.redis;
 
             this.map = new Map();
-
+	    this.totalPlayer=0;
+	    this.gameID;
             this.playersById = {};
             this.ctrlsById = {};
             this.maxPlayerId = 0;
@@ -78,6 +79,7 @@
 
         _chainBombs: function(b) {
             this.bombs.remove(b);
+	    
             this.chained.push(b);
 
             // build chained bombs
@@ -170,7 +172,7 @@
                 this.ctrlsById[whoId].notifyFriendBattles();
                 this.ctrlsById[byWhoId].notifyFriendBattles();
             }
-            this.trigger('score-changes');
+            this.trigger('score-changes',this.gameID);
         }
 
     });

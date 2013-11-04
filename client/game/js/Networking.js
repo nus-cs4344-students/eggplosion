@@ -13,7 +13,7 @@ define([
             this.peers = {};
 
             this.world = opt.world;
-
+	   this.gameID=opt.gameID;
             this.world.player.on('change', this.playerChange, this);
             this.world.player.on('die', this.playerDie, this);
 
@@ -57,12 +57,13 @@ define([
 
             this.id = d.your_id;
             console.log("Welcome to game " + d.game + " (my id = " + this.id + ")");
-
+		
             this.socket.emit('join', {
                 id: this.id,
                 fbuid: this.world.player.get('fbuid'),
                 name: this.world.player.get('name'),
-                character: this.world.player.get('character')
+                character: this.world.player.get('character'),
+		gameID:this.gameID
             });
 
             this.world.player.id = this.id;
@@ -92,7 +93,7 @@ define([
                 name: d.name,
                 character: d.character,
                 score: d.score,
-                fbuid: d.fbuid
+               
             });
             console.log(d.name + " #" + d.id + " joined", c);
             this.world.players.add(c);
@@ -187,12 +188,13 @@ define([
 
             this.socket.emit('dead', {
                 id: this.id,
-                flameOwner: flameOwner
+                flameOwner: flameOwner,
+		gameID:this.gameID
             });
         },
 
         requestPlaceBomb: function(b) {
-            this.socket.emit('put-bomb', {x: b.get('x'), y: b.get('y')});
+            this.socket.emit('put-bomb', {x: b.get('x'), y: b.get('y'),gameID:this.gameID});
             this.world.placeBombs.remove(b);
         },
 
@@ -202,7 +204,8 @@ define([
                 x: Math.round( player.get('x') * 1000 ) / 1000,
                 y: Math.round( player.get('y') * 1000 ) / 1000,
                 o: player.get('orient'),
-                m: player.get('moving')
+                m: player.get('moving'),
+		gameID:this.gameID
             });
         }, 25),
 
@@ -255,7 +258,7 @@ define([
                 if (p) p.set('lag', lag);
             }, this));
 
-            this.socket.emit('pong', {t: d.now} );
+            this.socket.emit('pong', {t: d.now,gameID:this.gameID} );
             this.world.updateScoring(false);
         },
 
