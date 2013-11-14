@@ -1,4 +1,3 @@
-
 define([
     "jquery", "underscore", "backbone",
 ],function($, _, Backbone, core) {
@@ -6,7 +5,8 @@ define([
 
 
     Networking = Backbone.Model.extend({
-
+	
+	//initialize network 
         initialize: function(opt) {
             this.id = -1;
 
@@ -21,7 +21,9 @@ define([
 
             //this.socket = io.connect(window.location.protocol + '//' + window.location.hostname + ':' + window.location.port + '/' + opt.game);
             this.socket = io.connect('http://localhost:8080/' + opt.game);
-
+	    
+	    //following are event handler..so that if it activate various methods based on message received
+	   //from server
             this.socket.on('disconnect', $.proxy(this.onDisconnect, this));
 
             this.socket.on('game-info', $.proxy(this.onGameJoin, this));
@@ -42,7 +44,8 @@ define([
 
             this.socket.on('break-tiles', $.proxy(this.onTilesBroke, this));
         },
-
+	
+	//remove everyone when it receive disconnect message
         onDisconnect: function() {
             $('#waitserver').show();
 
@@ -52,6 +55,7 @@ define([
             this.peers = {};
         },
 
+	//send join request to server
         onGameJoin: function(d) {
             $('#waitserver').hide();
 
@@ -60,7 +64,6 @@ define([
 		
             this.socket.emit('join', {
                 id: this.id,
-                fbuid: this.world.player.get('fbuid'),
                 name: this.world.player.get('name'),
                 character: this.world.player.get('character'),
 		gameID:this.gameID
@@ -72,6 +75,7 @@ define([
             this.peers[this.id] = this.world.player;
         },
 
+	//update map
         onMapUpdate: function(d) {
             this.world.map.set({
                 x: d.x,
@@ -85,6 +89,7 @@ define([
             console.log("full map update");
         },
 
+	//handle event that when new player join
         onPlayerJoined: function(d) {
             d.name = _.escape(d.name);
             info("<u>" + d.name + "</u> joined");
@@ -99,7 +104,8 @@ define([
             this.world.players.add(c);
             this.peers[d.id] = c;
         },
-
+	
+	//handle event that when a character spawned
         onPlayerSpawned: function(d) {
             var c = this.peers[d.id];
             if (!c) {
@@ -125,6 +131,7 @@ define([
             play('spawn');
         },
 
+	//handle event that when a character disconnect
         onPlayerDisconnected: function(d) {
             var c = this.peers[d.id];
             if (!c) return; // we don't know this guy
@@ -151,7 +158,8 @@ define([
                 moving: d.m
             });
         },
-
+	
+	//handle event when a player is dying
         onPlayerDying: function(d) {
             var c = this.peers[d.id];
             if (!c) {
@@ -192,12 +200,14 @@ define([
 		gameID:this.gameID
             });
         },
-
+	
+	//send message to server that a bomb is place
         requestPlaceBomb: function(b) {
             this.socket.emit('put-bomb', {x: b.get('x'), y: b.get('y'),gameID:this.gameID});
             this.world.placeBombs.remove(b);
         },
 
+	//send message to server new update about player
         sendPlayerChange: _.throttle(function(player) {
             this.socket.emit('update', {
                 id: this.id,
@@ -208,7 +218,8 @@ define([
 		gameID:this.gameID
             });
         }, 25),
-
+	
+	//display chat message
         onChat: function(d) {
             d.chat = _.escape(d.chat);
             var c = this.peers[d.id];
@@ -221,7 +232,8 @@ define([
 
             play('chat');
         },
-
+	
+	//send chat message
         sendChat: function(chat) {
             chat = chat.trim();
             if (chat.length==0) return;
@@ -230,11 +242,13 @@ define([
                 chat: chat
             });
         },
-
+	
+	//handle event that when a bomb is placed
         onBombPlaced: function(d) {
             this.world.bombs.add(new Bomb({x:d.x, y:d.y, owner:d.owner}));
         },
-
+	
+	//handle event that when a bomb goes off
         onBombBoomed: function(d) {
             var b = this.world.bombs.find(function(b) {
                 return b.get('x') == d.x && b.get('y') == d.y
@@ -243,7 +257,8 @@ define([
             // locate bomb
             this.world.explodeBomb(b, d.strength);
         },
-
+	
+	//handle event that when a tile is broken (by explosion)
         onTilesBroke: function(ds) {
             _.each(ds, _.bind(function(d) {
                 this.world.map.setTile(d.x, d.y, TILE_EMPTY);
@@ -262,6 +277,7 @@ define([
             this.world.updateScoring(false);
         },
 
+	//update new scores
         onScoreUpdates: function(d) {
             _.each(d, _.bind(function(score, id) {
                 var p = this.peers[id];
@@ -271,7 +287,7 @@ define([
             this.world.updateScoring(true);
         },
 
-
+	//update friends score
         onFriendScoreUpdates: function(d) {
             var self = this;
             var mates =_.map(d.ids, function(id) { return self.peers[id] });
