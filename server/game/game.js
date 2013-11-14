@@ -1,4 +1,3 @@
-
 (function() {
 
     const DIRECTIONS = [
@@ -165,8 +164,7 @@
                     this.redis.incr("counters.kills.kills");
                     this.redis.incr("kills-by:" + byWhoId);
 
-                    if (who.get('fbuid')>0 && byWho.get('fbuid') > 0)
-                        this.redis.incr("kill:" + who.get('fbuid') + ":by:" + byWho.get('fbuid'));
+                   
                 }
 
                
