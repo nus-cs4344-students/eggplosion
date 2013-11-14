@@ -6,7 +6,6 @@ define([
     "jquery", "underscore", "backbone",
 
     "text!../html/lobby.html",
-//    "facebook",
 
     "Game"
 ], function($, _, Backbone, tpl) {
