@@ -1,8 +1,13 @@
-
+//This file is repsonsible for generating the maps and sending it to the user for rendering/display
+//This map also get a valid but random spawn location for player.
+//It consist of the map and mapgenerator class
 (function() {
 
     MapGenerator = Backbone.Model.extend({
+	
+	//initialize maps variable and call the map generators
         initialize: function(opt) {
+		
             this.w = opt.w;
             this.h = opt.h;
 
@@ -100,6 +105,7 @@
             this.set('map', map.substr(0, ix) + c + map.substr(ix+1), {silent: silent});
         },
 
+	//try to give a random but valid location for player to spawn
         getValidSpawnLocation: function() {
             var valid = false;
             do {
@@ -126,6 +132,7 @@
             };
         },
 
+	//try to fill the map with breakabke tiles 
         update: function(g, now) {
             if (_.size(g.playersById)==0)
                 return;
