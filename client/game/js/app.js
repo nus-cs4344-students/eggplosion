@@ -18,7 +18,6 @@ require.config(
 require([
     "jquery", "underscore", "backbone",
     "polyfills/jscript",
-    //"facebook",
     "lobby"
 ],function($, _, Backbone, core) {
 
