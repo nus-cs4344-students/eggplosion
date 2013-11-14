@@ -1,8 +1,8 @@
-
+//This file code will handle all the states about the player
 
 (function() {
 
-
+//data structure and function of the player
     Player = Backbone.Model.extend({
 
         defaults: {
@@ -38,7 +38,7 @@
                 name: this.get('name'),
                 character: this.get('character'),
                 score: this.get('score'),
-                fbuid: this.get('fbuid')
+
             }
         },
 
@@ -49,7 +49,8 @@
 
 
     PlayerController = Backbone.Model.extend({
-
+	
+	//initialize variables and set event handlers
         initialize: function(opt) {
             this.id = opt.id;
             this.me = opt.player;
@@ -71,9 +72,10 @@
 
             this.pingTimer = setInterval(_.bind(this.ping, this), 2000);
 
-            this.notifyFriendBattles();
+           
         },
-
+	
+	
         ping: function() {
             var info = { now: (new Date()).getTime(), lags: {} };
             _.each(this.game.playersById, function(p,k) {
@@ -86,13 +88,15 @@
         onPong: function(d) {
             this.me.lag = ((new Date()).getTime() - d.t) / 2;
         },
-
-        onUpdate: function(d) {
+	
+	//update a player state and broad to all other players
+	onUpdate: function(d) {
             this.me.setUpdate(d);
             // update everyone else about my update
             this.socket.broadcast.volatile.emit('player-update', this.me.getUpdate());
         },
-
+	
+	//set when to spawn and send out information to client that he is dying
         onDead: function(d) {
             this.me.die();
 
@@ -102,7 +106,9 @@
             // notify everyone else
             this.endpoint.emit('player-dying', d);
         },
-
+	
+	//broadcast to everyone that player have disconnected
+	//and trigger the disconenct event 
         onDisconnect: function() {
             clearInterval(this.pingTimer);
             console.log("- " + this.me.get('name') + " disconnected");
@@ -111,8 +117,9 @@
             this.trigger("disconnect");
         },
 
+	//check if a bomb can be placed.
+	//If it can be placed, then broadcast to all player
         onPlaceBomb: function(d) {
-//            console.log('Placing bomb at ' + d.x + ", " + d.y);
 
             // can place bomb there?
             if (!this.game.bombs.any(function(b) { return b.get('x') == d.x && b.get('y') == d.y; }))
@@ -125,12 +132,14 @@
                 console.log('A bomb at ' + d.x + ", " + d.y + " already exists!");
             }
         },
-
+	
+	//send chat message to player
         onChat: function(d) {
             console.log('> ' + this.me.get('name') + ": " + d.chat, 'chat');
             this.endpoint.emit('chat', d);
         },
 
+	//determine where to spawn for player and send that information to him
         spawnPlayer: function() {
             this.me.set('alive', true);
             var loc = this.game.map.getValidSpawnLocation();
@@ -141,7 +150,8 @@
                 y: loc.y
             });
         },
-
+	
+	//send game state to player
         notifyGameState: function(d) {
             // send map
             this.socket.emit('map', this.game.map.getMap());
@@ -160,38 +170,6 @@
             // TODO
         },
 
-        notifyFriendBattles: function() {
-            var myfbuid = this.me.get('fbuid');
-            //FIXME is it null or -1?
-            if (!myfbuid) return;
-
-            var pids = [];
-
-            if (this.game.redis)
-                var m = this.game.redis.multi();
-
-            _.each(this.game.playersById, function(p, k) {
-                // FIXME same as above
-                var pfbuid = p.get('fbuid');
-                if (!pfbuid) return;
-                if (pfbuid == myfbuid) return;
-
-                pids.push(k);
-
-                if (m) {
-                    m.get("kill:" + pfbuid + ":by:" + myfbuid);
-                    m.get("kill:" + myfbuid + ":by:" + pfbuid);
-                }
-            });
-
-            var self = this;
-
-            if (m) {
-                m.exec(function(err, res) {
-                    self.socket.emit('friend-scores', {ids: pids, scores: res});
-                });
-            }
-        }
 
     });
 
