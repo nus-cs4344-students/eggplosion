@@ -29,7 +29,7 @@
             this.playersById = {};
             this.ctrlsById = {};
             this.maxPlayerId = 0;
-
+	
             this.bombs = new BombCollection();
             this.bombs.on('add', this.onBombAdded, this);
 
@@ -169,8 +169,7 @@
                         this.redis.incr("kill:" + who.get('fbuid') + ":by:" + byWho.get('fbuid'));
                 }
 
-                this.ctrlsById[whoId].notifyFriendBattles();
-                this.ctrlsById[byWhoId].notifyFriendBattles();
+               
             }
             this.trigger('score-changes',this.gameID);
         }
