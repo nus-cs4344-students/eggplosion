@@ -1,4 +1,3 @@
-
 define([
     "jquery", "underscore", "backbone",
 
@@ -189,10 +188,7 @@ define([
                 _.each(this.players.sortBy(function(p) { return -p.get('score'); }), function(p) {
                     var si = $(scoreItemTemplate({id: p.id, name: p.get('name'), score: p.get('score'), color: p.get('character') }));
 
-                    var fbuid = p.get('fbuid');
-                    if (fbuid) {
-                        $(".icon", si).append($("<img/>").attr("src", window.location.protocol+"//graph.facebook.com/" + fbuid + "/picture?type=square"));
-                    }
+                   
 
                     updateLag($('.lag', si), p.get('lag'));
 
