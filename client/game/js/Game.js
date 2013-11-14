@@ -1,4 +1,3 @@
-
 define([
     "jquery", "underscore", "backbone",
 
@@ -47,7 +46,7 @@ define([
 
             _.defer(_.bind(this.update, this));
 
-            this.initFriendsList();
+           
         },
 
 	//initialize layout of screen
