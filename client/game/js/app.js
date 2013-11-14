@@ -1,4 +1,3 @@
-
 TILE_EMPTY = 0;
 TILE_BRICK = 1;
 TILE_SOLID = 2;
@@ -39,22 +38,22 @@ require([
 
 });
 
-// FIXME move
+//display information into browswer as chat
 function info(m) {
     chat(m, "info");
 }
 
-// FIXME move
+//display which player kill which player
 function kill(p1, p2) {
     chat("<div class='bomb'></div><u>"+p1+"</u> killed by <u>"+p2+"</u>", "kill");
 }
 
-// FIXME move
+//display sucide by player
 function suicide(p1, p2) {
     chat("<div class='bomb'></div><u>"+p1+"</u> suicided", "kill");
 }
 
-// FIXME move
+// General chat function
 function chat(m, cls) {
     var d = $("<div>");
     d.html(m);
@@ -64,7 +63,7 @@ function chat(m, cls) {
     $chat.prop('scrollTop', $chat.prop('scrollHeight') );
 }
 
-// FIXME move
+// Start the game
 function play(snd) {
     // FIXME detect audio
     var a = new Audio("snd/" + snd + ".wav");
