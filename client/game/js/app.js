@@ -2,6 +2,7 @@ TILE_EMPTY = 0;
 TILE_BRICK = 1;
 TILE_SOLID = 2;
 
+//set the directory path etc
 require.config(
     {
         baseUrl: "js",
@@ -14,7 +15,7 @@ require.config(
     }
 );
 
-
+//load the following javascripts
 require([
     "jquery", "underscore", "backbone",
     "polyfills/jscript",
