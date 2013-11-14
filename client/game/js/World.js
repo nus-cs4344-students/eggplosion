@@ -250,14 +250,6 @@ define([
             '<div class="lag"></div>' +
         '</div>');
 
-    var mateScoreTemplate =  _.template(
-            '<div class="score-item">' +
-                '<div class="icon icon1"><img src="'+window.location.protocol+'//graph.facebook.com/<%= id1 %>/picture?type=square"/></div>' +
-                '<span class="score score1 <%= cls1 %>"><%= score1 %></span>' +
-                '<span class="vs"> vs </span>' +
-                '<span class="score score2 <%= cls2 %>"><%= score2 %></span>' +
-                '<div class="icon icon2"><img src="'+window.location.protocol+'//graph.facebook.com/<%= id2 %>/picture?type=square"/></div>' +
-            '</div>');
 
 
     var throttlePlay = _.throttle(function(snd) {
