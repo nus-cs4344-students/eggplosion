@@ -1,5 +1,7 @@
-
-
+//This is the game lobby, get the game sessions from the server and display to User
+//When user typed his name and choose his character and game session, it create a game object
+//and pass these information to it. The game object will do all other processing work such as 
+//connecting to the other server etc
 define([
     "jquery", "underscore", "backbone",
 
@@ -11,13 +13,14 @@ define([
 
 
     LobbyView = Backbone.View.extend({
-
+	
+	//Connect to game server lobby and set event handlers
         initialize: function() {
             this.$el.html(_.template(tpl));
 
             this.initUsername();
 	
-            //this.lobby = io.connect(window.location.protocol + '//' + window.location.hostname + ':3000/lobby');
+           
             this.lobby = io.connect('http://localhost:8080/lobby');
 
             this.lobby.on('connect', _.bind(this.lobbyConnect, this));
@@ -25,14 +28,10 @@ define([
 
             this.lobby.on('list-games', _.bind(this.onGamesList, this));
 
-//            fb.on("auth", _.bind(this.gotFacebookUser, this));
-//            fb.on("not-logged", function() {
-//                $("#facebook-login").show();
-//            });
 
             var frame = 0;
             setInterval(function() {
-                frame = (frame+1)%4;
+                frame = (frame+1)%2;
                 $("ul.character").attr("class", "character frame"+frame);
             }, 250);
 
@@ -48,28 +47,25 @@ define([
             $(e.currentTarget).addClass("selected");
         },
 
-       /* gotFacebookUser: function() {
-            $("#facebook-login").fadeOut(500);
-
-            $("#userpic").append($("<img/>").attr("src", window.location.protocol + "//graph.facebook.com/" + fb.uid + "/picture?type=square").fadeIn());
-            $('#userid').val(fb.uname);
-        },
-	*/
-
+     
+	//Once connected, get the latest game session. Every 2 second do the same thing
         lobbyConnect: function(s) {
             console.log("lobby on!");
             this.listGames();
             this.timer = setInterval(_.bind(this.listGames, this), 2000);
         },
-
+	
+	//Stop the polling to the game server to get game session once disconnected
         lobbyDisconnect: function() {
             clearInterval(this.timer);
         },
-
+	
+	//send command to server to get game sessions
         listGames: function() {
             this.lobby.emit("list-games");
         },
 
+	//once retrieve game session, display it
         onGamesList: function(games) {
             var gamesList = $('#games-list').empty();
 
@@ -83,7 +79,8 @@ define([
                 gamesList.append(i);
             });
         },
-
+	
+	//intialize the default charcter
         initUsername: function() {
             var $userid = $('#userid');
 
@@ -102,7 +99,10 @@ define([
             }
 
         },
-
+	
+	//get the username, character chosen and the game session chosen
+	//create a game object and pass in the above variable
+	//hide the lobby.html and show the game.html
         startGame: function(e) {
             var name = $('#userid').val();
             var game = $(e.currentTarget).data("game");
@@ -125,7 +125,7 @@ define([
 
             new Game({
                 playerName: name,
-                // fbuid: fb.uid,
+                
                 character: character,
                 game: game,
 		  gameID:gameID  
@@ -133,7 +133,7 @@ define([
 
             console.log({
                             playerName: name,
-                            //fbuid: FBuid,
+                            
                             character: character,
                             game: game,
 		             gameID:gameID
@@ -148,6 +148,6 @@ define([
                                     '<div class="play">play</div>' +
                                 '</div>)');
 
-  //  var FBuid = -1;
+ 
 
 });
