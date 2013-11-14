@@ -1,18 +1,18 @@
-
-
+//This javascript contain codes for controlling the player movement and ability to place a bomb.
 
 
 define([
     "jquery", "underscore", "backbone",
 ],function($, _, Backbone, core) {
 
-	// consts
+    // consts for detecting keyboard key
     var LEFT = 37;
     var UP = 38;
     var RIGHT = 39;
     var DOWN = 40;
     var SPACE = 32;
-
+  
+   	
     var PLAYER_MOVE_SPEED = 5; // squares per second
     var PLAYER_MAX_SPEED = 0.9;
 
@@ -23,6 +23,7 @@ define([
     LocalManager = Backbone.Model.extend({
         defaults: {
         },
+	
 
         initialize: function(opt) {
             this.$document = opt.document;
@@ -42,7 +43,8 @@ define([
             this.$document.keydown($.proxy(this.onKeyDown, this));
             this.$document.keyup($.proxy(this.onKeyUp, this));
         },
-
+	
+	//handle scenario where user press the down key
         onKeyDown: function(e) {
             if (!inChat) {
                 keymap[e.keyCode] = true;
@@ -71,11 +73,13 @@ define([
                 }
             }
         },
-
+	
+	//handle scenario where user press the up key
         onKeyUp: function(e) {
             keymap[e.keyCode] = false;
         },
-
+	
+	//handle events where the various key are being pressed
         update: function(delta) {
             if (this.me.get('dead')) return;
 
@@ -109,14 +113,16 @@ define([
                 play('die');
             }
         },
-
+	
+	//try to place the bomb if it allows
         tryPlaceBomb: function() {
             var x = Math.floor(this.me.get('x'));
             var y = Math.floor(this.me.get('y'));
             if (this.world.map.getBomb(x, y) == null)
                 this.world.placeBomb(x, y);
         },
-
+	
+	//move by delta x and y position if conditions allow
         requestMove: function(dx, dy) {
             var x = this.me.get('x');
             var y = this.me.get('y');
