@@ -1,5 +1,4 @@
 
-
 define([
     "jquery", "underscore", "backbone",
 
@@ -18,7 +17,8 @@ define([
             _.defer(_.bind(this.layout, this));
 
             $(window).resize(_.bind(this.layout, this));
-
+		
+	    //create game world
             this.world = new World({ container: $("#view") });
 
             // create our player
@@ -29,14 +29,14 @@ define([
             });
             this.world.players.add(this.world.player);
 
-            // network
+            // initialize network
             this.networking = new Networking({
                 world: this.world,
                 game: opt.game,
 		gameID:opt.gameID
             });
 
-            // local
+            // initialize local
             this.local = new LocalManager({
                 document: $(document),
                 world: this.world,
@@ -50,6 +50,7 @@ define([
             this.initFriendsList();
         },
 
+	//initialize layout of screen
         layout: function() {
             var view = $("#view");
             var p = $(document);
@@ -66,7 +67,8 @@ define([
 
             $chat.prop('scrollTop', $chat.prop('scrollHeight') );
         },
-
+	
+	//update the local and world when it is called
         update: function() {
             var now = getTicks();
             var delta = (now - this.lastTime) / 1000;
@@ -80,45 +82,7 @@ define([
         },
 
 
-        initFriendsList: function() {
-
-            $("#friends-section .friend:not(.challenged)")
-                .live("mouseenter", function() {
-                    var item = $(this);
-
-                    $(".who", item).fadeOut(100, function() {
-                        $(".challenge", item).remove();
-                        item.append($('<div class="challenge"><a href="#">Challenge friend</a></div>').fadeIn(200));
-                    });
-                })
-                .live("mouseleave", function() {
-                    var item = $(this);
-
-                    $(".who", item).stop(false, true);
-                    $(".challenge", item).stop(false, true);
-
-                    $(".challenge", item).fadeOut(100, function() {
-                        $(".challenge", item).remove();
-                        $(".who", item).fadeIn(200);
-                    });
-                })
-                .live('click', function() {
-                    var item = $(this);
-                    var user_id = item.data('id');
-
-                 
-                });
-
-            $("#multi-challenge").click(function() {
-                var item = $(this);
-
-                // FIXME DRY as above (except :to)
-            
-            });
-
-           // _.defer(_.bind(this.refreshFriends, this));
-            //setInterval(_.bind(this.refreshFriends, this), 30000);
-        },
+    
 
      
 

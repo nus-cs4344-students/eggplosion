@@ -1,5 +1,4 @@
 
-
 define([
     "jquery", "underscore", "backbone",
 
@@ -12,6 +11,7 @@ define([
     var ORIENT_LEFT = 3;
 
 
+    //this is the structure of the Character class
     Character = Sprite.extend({
         defaults: {
             name: '?',
@@ -24,6 +24,7 @@ define([
             score: 0
         },
 
+        //this method is to get the new x and y coordinate of the character
         deltaMove: function(x, y) {
             this.set('x', this.get('x') + x);
             this.set('y', this.get('y') + y);
@@ -37,13 +38,15 @@ define([
             else if (y>0)
                 this.set('orient', ORIENT_DOWN);
         },
-
+        
+        //this method is to make the character die if it is caught in explosion(flame)
         die: function(flame) {
             this.set('dead', true);
             this.trigger('die', flame);
             this.set('frame', 0);
         },
-
+        
+        //this method is for chat purpose
         sendMessage: function(msg) {
             this.set('chat', msg);
         }

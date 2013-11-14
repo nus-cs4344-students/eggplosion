@@ -1,5 +1,4 @@
 
-
 define([
     "jquery", "underscore", "backbone",
 
@@ -20,6 +19,7 @@ define([
         {x:0, y:1, e: 5, d: 1}
     ];
 
+    //collections of different objects in the game world.
     PlayerCollection = Backbone.Collection.extend({
         comparator: function(p) {
             return p.get('y');
@@ -58,7 +58,8 @@ define([
 
 
     World = Backbone.Model.extend({
-
+    
+    //create variables
         /** element to hold the map into */
         $container: null,
 
@@ -79,9 +80,7 @@ define([
         flames: new FlamesCollection(),
         breakings: new BreakersCollection(),
 
-        /** obsolete, NPC players */
-        npcs: [],
-
+        //initialize world        
         initialize: function(opt) {
             this.$container = opt.container;
 
@@ -97,7 +96,8 @@ define([
 
             this.canvas = new GameCanvas({world: this});
         },
-
+        
+        
         onCharacterAdded: function(c) {
             this.updateScoring(true);
         },
@@ -111,7 +111,9 @@ define([
             // add on temporary queue
             this.placeBombs.add(new Bomb({x: x, y: y}));
         },
-
+        
+        //handle what happen when a bomb went off
+    
         explodeBomb: function(b, strength) {
             this.bombs.remove(b);
 
@@ -136,7 +138,7 @@ define([
             throttlePlay('explode-break');
         },
 
-
+        //merge the different direction flames together
         addMergeFlame: function(x, y, type, owner) {
 
             var ef = this.map.getFlame(x,y);
@@ -154,7 +156,8 @@ define([
                 this.map.setFlame(x, y, ef);
             }
         },
-
+        
+        //event handlers for bomb and flame
         onBombAdded: function(b) {
             this.map.setBomb(b.get('x'), b.get('y'), b);
         },
@@ -166,7 +169,8 @@ define([
         onFlameRemoved: function(f) {
             this.map.setFlame(f.get('x'), f.get('y'), null);
         },
-
+        
+        //update function to update all objects in the game world
         update: function(dt) {
 
             this.players.each(function(p) { p.update(dt); });
@@ -176,7 +180,8 @@ define([
 
             this.canvas.update(dt);
         },
-
+    
+        //get latest score for player
         updateScoring: function(recreate) {
             var $st = $("#scores");
             if (recreate) {
@@ -201,7 +206,8 @@ define([
                 });
             }
         },
-
+        
+        //get latest score for other players
         updateFriendScoring: function(mates, scores) {
             $("#challenges-section").show();
 
@@ -227,7 +233,8 @@ define([
 
         }
     });
-
+    
+    //update how laggy it is for each player
     var updateLag = function($lag, lag) {
         var lagw = lagBar(lag, 20, 300, 48, 8);
         var cg = Math.round(lagBar(lag, 20, 250, 255, 0));

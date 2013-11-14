@@ -1,5 +1,4 @@
 
-
 define([
     "jquery", "underscore", "backbone",
 
@@ -23,7 +22,7 @@ define([
         }
     });
 
-
+//this is the class structure of the Flame object
     Flame = Sprite.extend({
 
         defaults: {
@@ -32,7 +31,10 @@ define([
             type: 0,
             owner: -1
         },
-
+    
+    //this method is to merge the flames into one.
+    //this is because when a bomb explode, it will explode in 4 direction. However if it is obstructed, 
+    //not all 4 direction explosion will be shown
         mergeWith: function(nt) {
             var t = this.get('type');
 
