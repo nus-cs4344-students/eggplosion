@@ -93,12 +93,28 @@ define([
             if (keymap[RIGHT])  dx+=speed;
             if (keymap[UP])     dy-=speed;
             if (keymap[DOWN])   dy+=speed;
+			
+			var tilted = false;
+			// Listen for the deviceorientation event and handle the raw data
+			window.addEventListener('deviceorientation', function(eventData) {
+				// gamma is the left-to-right tilt in degrees, where right is positive
+				var tiltLR = Math.round(eventData.gamma);
 
-            var moving = keymap[LEFT] || keymap[RIGHT] || keymap[UP] || keymap[DOWN];
+				// beta is the front-to-back tilt in degrees, where front is positive
+				var tiltFB = Math.round(eventData.beta);
+			
+				if(tiltLR > 10) {dx+=speed; tilted = true;}
+				if(tiltLR < -10) {dx-=speed; tilted = true;}
+				if(tiltFB > 10) {dy+=speed; tilted = true;}
+				if(tiltFB < -10) {dy-=speed; tilted = true;}
+				
+			}, false);
+			
+            var moving = keymap[LEFT] || keymap[RIGHT] || keymap[UP] || keymap[DOWN] || tilted;
 
             if (moving)
                 this.requestMove(dx, dy);
-
+			
             if (keymap[SPACE])
                 this.tryPlaceBomb();
 
