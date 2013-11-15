@@ -115,7 +115,12 @@ define([
             if (moving)
                 this.requestMove(dx, dy);
 			
-            if (keymap[SPACE])
+			var touched = false; 
+			window.addEventListener("touchstart", function(event){
+				touched = true;
+			}, false);
+			
+            if (keymap[SPACE] || touched)
                 this.tryPlaceBomb();
 
             this.me.set('moving', moving===true);
